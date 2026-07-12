@@ -48,13 +48,13 @@ resource "aws_iam_role_policy" "lambda_s3_policy" {
         Resource = "arn:aws:s3:::${var.source_bucket}/${var.source_prefix}*"
       },
       {
-            Sid = "AllowWriteToDestination"
-            Action = [
-            "s3:PutObject"
-            ]
-            Effect   = "Allow"
-            Resource = "arn:aws:s3:::${var.destination_bucket}/${var.destination_prefix}*"
-     }
+        Sid = "AllowWriteToDestination"
+        Action = [
+          "s3:PutObject"
+        ]
+        Effect   = "Allow"
+        Resource = "arn:aws:s3:::${var.destination_bucket}/${var.destination_prefix}*"
+      }
     ]
   })
 }
@@ -62,23 +62,45 @@ resource "aws_iam_role_policy" "lambda_s3_policy" {
 resource "aws_iam_role_policy_attachment" "lambda_role" {
   role       = aws_iam_role.lambda_tf_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-  
+
 }
 
 resource "aws_lambda_function" "lambda_exec" {
-  function_name = "s3-scanned-file-mover-lambda"
-  role          = aws_iam_role.lambda_tf_role.arn
-  handler       = "lambda_function.lambda_handler"
-  runtime       = "python3.12"
-  filename      = data.archive_file.lambda_zip.output_path
+  function_name    = "s3-scanned-file-mover-lambda"
+  role             = aws_iam_role.lambda_tf_role.arn
+  handler          = "lambda_function.lambda_handler"
+  runtime          = "python3.12"
+  filename         = data.archive_file.lambda_zip.output_path
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
 
-  timeout = 60
+  timeout     = 60
   memory_size = 128
 
   depends_on = [
-      aws_iam_role_policy.lambda_s3_policy,
-      aws_iam_role_policy_attachment.lambda_role
-    ]
+    aws_iam_role_policy.lambda_s3_policy,
+    aws_iam_role_policy_attachment.lambda_role
+  ]
 }
 
+# Granting permission for S3 to invoke the Lambda function
+resource "aws_lambda_permission" "allow_s3" {
+  statement_id  = "AllowS3Invoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.lambda_exec.function_name
+  principal     = "s3.amazonaws.com"
+  source_arn    = "arn:aws:s3:::${var.source_bucket}"
+}
+
+
+### S3 event notification to trigger the Lambda function when a new object is created in the source bucket
+resource "aws_s3_bucket_notification" "bucket_notification" {
+  bucket =var.source_bucket
+
+  lambda_function {
+    lambda_function_arn = aws_lambda_function.lambda_exec.arn
+    events              = ["s3:ObjectCreated:*"]
+    filter_prefix       = "reports/"
+  }
+
+  depends_on = [aws_lambda_permission.allow_s3]
+}
