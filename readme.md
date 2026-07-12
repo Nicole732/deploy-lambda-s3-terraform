@@ -49,11 +49,7 @@ Files already containing `_scanned` in their filename are skipped to prevent dup
    ```bash
    terraform apply
    ```
-## Lambda Function Response
-The Lambda function returns the following JSON response:
-```json
-....
-```
+
 ## Skipping Logic
 The Lambda function skips files in the following cases:
 1. **Folder placeholders**: Files ending with `/`
@@ -77,6 +73,48 @@ Terraform state is stored in an S3 backend:
 └── lambda/
     └── lambda_function.py  # Lambda handler code
 ```
+## View of Deployed Code in AWS Console
+
+### Source Bucket
+Shows the source bucket before Lambda processing.
+
+![Source Bucket](images/sourcebucket.png)
+
+### Triggered Lambda Invocation
+Lambda function triggered by an S3 `ObjectCreated` event.
+
+![Triggered Lambda](images/triggeredlambda.png)
+
+### Lambda Function Invocation Logs
+CloudWatch invocation details for the Lambda function.
+
+![Lambda Function Invocation](images/lambdafunctioninvocation.png)
+
+### View of Logs
+CloudWatch log output showing execution details.
+
+![View of Logs](images/viewoflogs.png)
+
+### View of Source Bucket (Post-Processing)
+Source bucket after the Lambda moved/processed the file.
+
+![View of Source Bucket](images/viewofsourcebucket.png)
+
+### View of Destination Bucket
+Destination bucket showing the scanned/renamed file.
+
+![View of Destination Bucket](images/viewdestinationbucket.png)
+
+### Sample Error
+Example error encountered during development/debugging.
+
+![Sample Error](images/sampleerror.png)
+
+### View Lambda Configuration
+Lambda function configuration in the AWS Console.
+
+![View Lambda](images/viewlambda.png)
+
 ## Cleanup
 To remove all resources created by this configuration:
 ```bash

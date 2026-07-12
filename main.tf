@@ -94,7 +94,7 @@ resource "aws_lambda_permission" "allow_s3" {
 
 ### S3 event notification to trigger the Lambda function when a new object is created in the source bucket
 resource "aws_s3_bucket_notification" "bucket_notification" {
-  bucket =var.source_bucket
+  bucket = var.source_bucket
 
   lambda_function {
     lambda_function_arn = aws_lambda_function.lambda_exec.arn
