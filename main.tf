@@ -1,6 +1,6 @@
 data "archive_file" "lambda_zip" {
   type        = "zip"
-  source_dir  = "${path.module}/lambda/lambda_function.py"
+  source_file = "${path.module}/lambda/lambda_function.py"
   output_path = "${path.module}/lambda_function.zip"
 }
 
@@ -31,7 +31,7 @@ resource "aws_iam_role_policy" "lambda_s3_policy" {
     Version = "2012-10-17"
     Statement = [
       {
-        sid = "AllowS3Access"
+        Sid = "AllowS3Access"
         Action = [
           "s3:ListBucket",
         ]
@@ -39,7 +39,7 @@ resource "aws_iam_role_policy" "lambda_s3_policy" {
         Resource = "arn:aws:s3:::${var.source_bucket}"
       },
       {
-        sid = "AllowReadAndDeleteFromSource"
+        Sid = "AllowReadAndDeleteFromSource"
         Action = [
           "s3:GetObject",
           "s3:DeleteObject"
@@ -48,7 +48,7 @@ resource "aws_iam_role_policy" "lambda_s3_policy" {
         Resource = "arn:aws:s3:::${var.source_bucket}/${var.source_prefix}*"
       },
       {
-            sid = "AllowWriteToDestination"
+            Sid = "AllowWriteToDestination"
             Action = [
             "s3:PutObject"
             ]
